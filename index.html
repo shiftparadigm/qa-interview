@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Request Form</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .card h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .card p.subtitle {
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    label .required {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="email"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: #111827;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="tel"]:focus,
+    input[type="email"]:focus {
+      border-color: #4f46e5;
+    }
+
+    input.error-input {
+      border-color: #ef4444;
+    }
+
+    .error-msg {
+      font-size: 0.78rem;
+      color: #ef4444;
+      margin-top: 4px;
+      min-height: 18px;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: #4f46e5;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      letter-spacing: 0.5px;
+      transition: background 0.2s;
+      /* BUG: tabindex set so Submit is skipped in tab order */
+      tabindex: -1;
+    }
+
+    .btn-submit:hover {
+      background: #4338ca;
+    }
+
+    .success-banner {
+      display: none;
+      background: #d1fae5;
+      border: 1px solid #6ee7b7;
+      border-radius: 8px;
+      color: #065f46;
+      padding: 14px 16px;
+      font-size: 0.9rem;
+      margin-top: 20px;
+    }
+
+    .success-banner.visible {
+      display: block;
+    }
+
+
+    /* BUG: Mobile styles are broken */
+    @media (max-width: 600px) {
+      .card {
+        padding: 48px 40px;
+        max-width: 9999px;
+        width: 200%;
+        margin-left: -50%;
+        border-radius: 0;
+      }
+
+      input[type="text"],
+      input[type="tel"],
+      input[type="email"] {
+        font-size: 6vw;
+        padding: 20px 4px;
+      }
+
+      .btn-submit {
+        font-size: 4vw;
+        padding: 6px;
+        width: 50%;
+        margin-left: 25%;
+      }
+
+      label {
+        font-size: 5vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Demo Request Form</h1>
+    <p class="subtitle">Fill out the form below and we'll be in touch.</p>
+
+    <form id="demoForm" novalidate>
+
+      <div class="form-group">
+        <label for="firstName">First Name<span class="required">*</span></label>
+        <input type="text" id="firstName" name="firstName" tabindex="1" placeholder="Jane" />
+        <div class="error-msg" id="firstNameError"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="lastName">Last Name<span class="required">*</span></label>
+        <input type="text" id="lastName" name="lastName" tabindex="2" placeholder="Smith" />
+        <div class="error-msg" id="lastNameError"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Phone Number<span class="required">*</span></label>
+        <!-- BUG: no error message div wired up for phone -->
+        <input type="tel" id="phone" name="phone" tabindex="3" placeholder="(555) 000-0000" />
+        <div class="error-msg" id="phoneError"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address<span class="required">*</span></label>
+        <!-- BUG: email accepts any non-empty string (no format validation) -->
+        <input type="text" id="email" name="email" tabindex="4" placeholder="jane@example.com" />
+        <div class="error-msg" id="emailError"></div>
+      </div>
+
+      <!-- BUG: tabindex="-1" skips this in keyboard tab order -->
+      <button type="submit" class="btn-submit" tabindex="-1">SUBMIT</button>
+
+    </form>
+
+    <div class="success-banner" id="successBanner">
+      Form submitted successfully!
+    </div>
+
+  </div>
+
+  <script>
+    const form = document.getElementById('demoForm');
+
+    function clearErrors() {
+      document.getElementById('firstNameError').textContent = '';
+      document.getElementById('lastNameError').textContent = '';
+      // BUG: phoneError is never cleared or set — phone validation is silently skipped
+      document.getElementById('emailError').textContent = '';
+
+      document.getElementById('firstName').classList.remove('error-input');
+      document.getElementById('lastName').classList.remove('error-input');
+      document.getElementById('phone').classList.remove('error-input');
+      document.getElementById('email').classList.remove('error-input');
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      clearErrors();
+
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName  = document.getElementById('lastName').value.trim();
+      const phone     = document.getElementById('phone').value.trim();
+      const email     = document.getElementById('email').value.trim();
+
+      let hasError = false;
+
+      if (!firstName) {
+        document.getElementById('firstNameError').textContent = 'First Name is required';
+        document.getElementById('firstName').classList.add('error-input');
+        hasError = true;
+      }
+
+      if (!lastName) {
+        document.getElementById('lastNameError').textContent = 'Last Name is required';
+        document.getElementById('lastName').classList.add('error-input');
+        hasError = true;
+      }
+
+      // BUG: phone validation runs but error message is never displayed
+      if (!phone) {
+        // intentionally not setting phoneError text or error-input class
+        hasError = true;
+      }
+
+      // BUG: only checks that email is non-empty — no format validation
+      if (!email) {
+        document.getElementById('emailError').textContent = 'Email Address is required';
+        document.getElementById('email').classList.add('error-input');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      // BUG: email is intentionally omitted from the submitted payload
+      const payload = {
+        firstName: firstName,
+        lastName:  lastName,
+        phone:     phone
+        // email is missing
+      };
+
+      fetch('https://httpbin.org/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      document.getElementById('successBanner').classList.add('visible');
+    });
+  </script>
+</body>
+</html>
